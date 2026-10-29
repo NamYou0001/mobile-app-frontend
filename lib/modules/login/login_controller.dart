@@ -1,5 +1,3 @@
-
-import 'package:demo_access_refresh_token_app/core/services/api_service_impl.dart';
 import 'package:demo_access_refresh_token_app/routes/app_route_name.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -41,8 +39,13 @@ class LoginController extends GetxController {
       TokenStoreLocal.setRefreshToken(loginResponse.refreshToken ?? "");
       Get.offNamed(AppRouteName.home);
     } else {
-      Get.snackbar("Error", "Login Un Successfully");
+      Get.snackbar("Error", "Login Unsuccessfully");
     }
     isLoading.value = false;
+  }
+
+  // Added navigation to register
+  void goToRegister() {
+    Get.toNamed(AppRouteName.register);
   }
 }

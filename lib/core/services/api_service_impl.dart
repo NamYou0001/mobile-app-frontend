@@ -9,7 +9,8 @@ import 'package:demo_access_refresh_token_app/models/login/RefreshTokenRequest.d
 import 'package:demo_access_refresh_token_app/routes/app_route_name.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as httpClient;
-
+import '../../models/register/RegisterRequest.dart';
+import '../../models/register/RegisterResponse.dart';
 class ApiServiceImpl implements ApiService {
   var headers = {"Content-Type": "application/json"};
   @override
@@ -26,7 +27,20 @@ class ApiServiceImpl implements ApiService {
     }
     return LoginResponse();
   }
-
+  @override
+  Future<RegisterResponse> register({RegisterRequest? body}) async {
+    var url = Uri.parse(ConstantUri.register);
+    var response = await httpClient.post(
+      url,
+      body: jsonEncode(body!.toJson()),
+      headers: headers,
+    );
+    if (response.statusCode == 200) {
+      var registerResponse = RegisterResponse.fromJson(jsonDecode(response.body));
+      return registerResponse;
+    }
+    return RegisterResponse();
+  }
   @override
   Future<bool> refreshToken(String token) async {
     var url = Uri.parse(ConstantUri.refreshToken);
@@ -67,7 +81,6 @@ class ApiServiceImpl implements ApiService {
     }
     return null;
   }
-
   dynamic getApiRetry(String url, {String? param}) async {
     var response = await httpClient.get(
       Uri.parse(url),

@@ -9,177 +9,242 @@ class PostView extends GetView<PostController> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF0D7E9D);
+    const Color darkTeal = Color(0xFF023E54);
+    const Color bgColor = Color(0xFFF5F7FA);
+
     return Obx(() {
       return Scaffold(
-        backgroundColor: const Color(0xffF5F7FA),
+        backgroundColor: bgColor,
         appBar: AppBar(
           actions: [
-            IconButton(onPressed: (){
-              Get.toNamed(AppRouteName.adminPostForm);
-            }, icon: Icon(Icons.add))
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                onPressed: () {
+                  Get.toNamed(AppRouteName.adminPostForm);
+                },
+                icon: const Icon(Icons.add_circle_outline, size: 28),
+              ),
+            )
           ],
-          iconTheme: IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: Colors.white),
           elevation: 0,
           centerTitle: true,
-          backgroundColor: Colors.cyan,
+          backgroundColor: primaryColor,
           title: const Text(
-            "Posts",
+            "Manage Posts",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
         body: controller.loading.value == true
-            ? LoadingWidget()
+            ? const LoadingWidget()
             : RefreshIndicator(
-                onRefresh: () async {
-                  controller.getAllPost();
-                },
-                child: ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: controller.postList.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 20),
-                  itemBuilder: (context, index) {
-                    final data = controller.postList[index];
+          color: primaryColor,
+          onRefresh: () async {
+            controller.getAllPost();
+          },
+          child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            itemCount: controller.postList.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 24),
+            itemBuilder: (context, index) {
+              final data = controller.postList[index];
 
-                    return Card(
-                      elevation: 4,
-                      shadowColor: Colors.black12,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    )
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Image Section
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
                       ),
+                      child: Image.network(
+                        data.image ?? "",
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 200,
+                            color: bgColor,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(color: primaryColor),
+                          );
+                        },
+                        errorBuilder: (_, __, ___) {
+                          return Container(
+                            height: 200,
+                            color: primaryColor.withValues(alpha: 0.05),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.image_not_supported_rounded, size: 50, color: primaryColor.withValues(alpha: 0.3)),
+                                  const SizedBox(height: 8),
+                                  Text("No Image Available", style: TextStyle(color: primaryColor.withValues(alpha: 0.5))),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// Image
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(18),
-                            ),
-                            child: Image.network(
-                              data.image ?? "",
-                              width: double.infinity,
-                              height: 220,
-                              fit: BoxFit.cover,
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-
-                                    return Container(
-                                      height: 220,
-                                      alignment: Alignment.center,
-                                      child: const CircularProgressIndicator(),
-                                    );
-                                  },
-                              errorBuilder: (_, __, ___) {
-                                return Container(
-                                  height: 220,
-                                  color: Colors.grey.shade300,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.broken_image,
-                                      size: 60,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                );
-                              },
+                          /// Title
+                          Text(
+                            data.title ?? "Untitled Post",
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: darkTeal,
+                              height: 1.2,
                             ),
                           ),
+                          const SizedBox(height: 10),
 
-                          Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                /// Title
-                                Text(
-                                  data.title ?? "",
+                          /// Date Row
+                          Row(
+                            children: [
+                              const Icon(Icons.access_time_rounded, size: 16, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                data.createAt ?? "Unknown Date",
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          /// Description
+                          Text(
+                            data.description ?? "No description provided.",
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey.shade700,
+                              height: 1.5,
+                            ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 16),
+
+                          /// Tags (Beautiful Borderless Chips)
+                          if (data.tags != null && data.tags!.isNotEmpty)
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: data.tags!.map((tag) => Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  "#$tag",
                                   style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
+                              )).toList(),
+                            ),
 
-                                const SizedBox(height: 10),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                          ),
 
-                                /// Description
-                                Text(
-                                  data.description ?? "",
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.grey.shade700,
-                                    height: 1.5,
-                                  ),
+                          /// Footer: Reactions & Category (Aligned nicely)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Reactions (Likes & Dislikes)
+                              Row(
+                                children: [
+                                  _buildReactionItem(Icons.thumb_up_rounded, Colors.green.shade600, data.reactions?.likes ?? 0),
+                                  const SizedBox(width: 16),
+                                  _buildReactionItem(Icons.thumb_down_rounded, Colors.red.shade400, data.reactions?.dislikes ?? 0),
+                                ],
+                              ),
+
+                              // Category Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-
-                                const SizedBox(height: 16),
-
-                                /// Tags
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: (data.tags ?? [])
-                                      .map(
-                                        (tag) => Chip(
-                                          backgroundColor: Colors.cyan.shade50,
-                                          label: Text(tag),
-                                        ),
-                                      )
-                                      .toList(),
-                                ),
-
-                                const SizedBox(height: 16),
-
-                                /// Likes & Dislikes
-                                Row(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
-                                      Icons.thumb_up_alt,
-                                      color: Colors.green,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text("${data.reactions?.likes ?? 0}"),
-
-                                    const SizedBox(width: 20),
-
-                                    Icon(
-                                      Icons.thumb_down_alt,
-                                      color: Colors.red,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text("${data.reactions?.dislikes ?? 0}"),
-                                  ],
-                                ),
-
-                                const Divider(height: 30),
-
-                                /// Category
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.category,
-                                      color: Colors.cyan,
-                                    ),
-                                    const SizedBox(width: 8),
+                                    Icon(Icons.category_rounded, size: 14, color: Colors.orange.shade700),
+                                    const SizedBox(width: 6),
                                     Text(
-                                      data.postCategory?.name ?? "-",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
+                                      data.postCategory?.name ?? "General",
+                                      style: TextStyle(
+                                        color: Colors.orange.shade700,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
-              ),
+              );
+            },
+          ),
+        ),
       );
     });
+  }
+
+  // Helper method for clean reaction icons
+  Widget _buildReactionItem(IconData icon, Color color, int count) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(width: 6),
+        Text(
+          "$count",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
   }
 }
